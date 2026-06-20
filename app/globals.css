@@ -122,3 +122,116 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .btn { background: var(--amber); color: #1a1205; border: none; border-radius: 9px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .btn:disabled { opacity: 0.6; cursor: default; }
 .brief { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin: 14px 0 0; font-size: 13px; line-height: 1.6; color: var(--text); font-family: inherit; }
+
+/* ============================================================
+   MOBILE  — everything below applies ONLY at ≤768px (drawer nav)
+   and ≤640px (2-up stats + tables-as-cards). Desktop (≥769px) is
+   never matched, so the desktop layout stays byte-for-byte identical.
+   ============================================================ */
+
+/* Drawer chrome exists in the DOM at all sizes but is invisible on desktop
+   (display:none takes it out of the flex flow → zero effect on desktop). */
+.topbar { display: none; }
+.scrim { display: none; }
+
+@media (max-width: 768px) {
+  /* Stack the shell; the sidebar leaves the flow and becomes a drawer. */
+  .app { display: block; }
+
+  /* ---- Sticky top bar with hamburger ---- */
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 30;
+    min-height: 54px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: env(safe-area-inset-top) max(14px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
+  }
+  .burger {
+    width: 44px; height: 44px; flex-shrink: 0; margin-left: -4px;
+    display: grid; place-items: center;
+    background: none; border: 1px solid var(--border); border-radius: 9px;
+    color: var(--text); cursor: pointer;
+  }
+  .burger-bars, .burger-bars::before, .burger-bars::after {
+    display: block; width: 20px; height: 2px; background: var(--text); border-radius: 2px;
+  }
+  .burger-bars { position: relative; }
+  .burger-bars::before, .burger-bars::after { content: ''; position: absolute; left: 0; }
+  .burger-bars::before { top: -6px; }
+  .burger-bars::after { top: 6px; }
+  .topbrand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 16px; color: var(--amber); }
+  .topbrand .logo { width: 22px; height: 22px; border-radius: 6px; background: var(--amber); flex-shrink: 0; }
+
+  /* ---- Off-canvas drawer ---- */
+  .side {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+    width: 264px; max-width: 84vw;
+    transform: translateX(-100%);
+    transition: transform .22s ease;
+    box-shadow: 2px 0 24px rgba(0, 0, 0, .5);
+    padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  }
+  .side.open { transform: translateX(0); }
+
+  /* ---- Tap-outside scrim ---- */
+  .scrim {
+    display: block; position: fixed; inset: 0; z-index: 40;
+    background: rgba(0, 0, 0, .5);
+    opacity: 0; pointer-events: none; transition: opacity .22s ease;
+  }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  body.nav-open { overflow: hidden; }
+
+  /* Readable text + ≥44px tap targets in the drawer. */
+  .nav a { font-size: 16px; padding: 11px 12px; min-height: 44px; display: flex; align-items: center; }
+
+  /* ---- Main content ---- */
+  .main {
+    padding: 18px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left));
+  }
+  .ph { font-size: 20px; }
+}
+
+@media (max-width: 640px) {
+  /* Stat cards: a clean 2-up grid (no more lonely 1-column / wrapped numbers). */
+  .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat .v { font-size: 24px; }
+
+  /* Data tables -> stacked cards. Labels come from data-label="" on each <td>. */
+  .tbl { border: none; background: none; border-radius: 0; overflow: visible; }
+  .tbl thead {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .tbl tr {
+    display: block; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 12px; overflow: hidden;
+  }
+  .tbl td {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    padding: 10px 14px; font-size: 16px; text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .tbl tr td:last-child { border-bottom: none; }
+  .tbl td::before {
+    content: attr(data-label); flex-shrink: 0;
+    color: var(--muted); font-size: 13px; font-weight: 500; text-align: left;
+  }
+  /* First cell = the card's title row: full width, prominent, no label. */
+  .tbl td:first-child {
+    font-weight: 600; font-size: 16px; text-align: left;
+    background: var(--surface2);
+  }
+  .tbl td:first-child::before { display: none; }
+
+  /* Pipeline kanban: stack the stage columns vertically. */
+  .cols { flex-direction: column; gap: 18px; }
+
+  /* Agents office + cards. */
+  .office { height: 300px; }
+  .agent-card { max-width: 100%; }
+  .btn { min-height: 44px; }
+  .brief { overflow-wrap: anywhere; }
+}
